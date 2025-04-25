@@ -54,13 +54,11 @@ namespace MonkeModManager
                     PostRaw(@"{""version"":""" + _version + @"""}");
                     Properties.Settings.Default.installDirectory = _installDirectory;
 
-                    if (!string.IsNullOrEmpty(_installDirectory) && Directory.Exists(_installDirectory)) return;
-
-                    if (Directory.Exists(DefaultSteamInstallDirectory))
+                    if (Directory.Exists(DefaultSteamInstallDirectory) || _installDirectory == null)
                         _installDirectory = DefaultSteamInstallDirectory;
-                    else if (Directory.Exists(DefaultOculusInstallDirectory))
+                    else if (Directory.Exists(DefaultOculusInstallDirectory) || _installDirectory == null)
                         _installDirectory = DefaultOculusInstallDirectory;
-                    else
+                    else if(_installDirectory == null)
                         FindGameFolder();
 
                     PostPath(_installDirectory);
