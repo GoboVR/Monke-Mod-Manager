@@ -1,0 +1,545 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Monke Mod Manager</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            height: 100%;
+            font-family: sans-serif;
+            background: #1e1e2f;
+            color: #eee;
+            display: flex;
+            flex-direction: column;
+        }
+        header {
+            background: #2a2a40;
+            padding: 1rem;
+            display: flex;
+            gap: .5rem;
+            align-items: center;
+        }
+        header input {
+            flex:1;
+            padding:.5rem;
+            border:none;
+            border-radius:4px;
+            background:#333;
+            color:#fff;
+        }
+        header button {
+            padding:.5rem .75rem;
+            background:#444;
+            color:#fff;
+            border:none;
+            border-radius:4px;
+            cursor:pointer;
+        }
+        nav {
+            display:flex;
+            background:#161625;
+            border-bottom:2px solid #292940;
+        }
+        nav button {
+            flex:1;
+            padding:.75rem 1rem;
+            background:none;
+            border:none;
+            border-bottom:3px solid transparent;
+            color:#aaa;
+            cursor:pointer;
+        }
+        nav button.active {
+            border-color:#2e89ff;
+            color:#fff;
+        }
+        main {
+            flex:1;
+            overflow-y:auto;
+            padding:1rem;
+        }
+        main::-webkit-scrollbar {
+            width:12px;
+        }
+        main::-webkit-scrollbar-track {
+            background:#2a2a40;
+            border-radius:6px;
+        }
+        main::-webkit-scrollbar-thumb {
+            background-color:#2e89ff;
+            border-radius:6px;
+            border:3px solid #2a2a40;
+        }
+        main::-webkit-scrollbar-thumb:hover {
+            background-color:#1a5dcc;
+        }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; }
+        .group-section { margin-bottom:2rem; }
+        .group-section h3 {
+            border-bottom:1px solid #444;
+            padding-bottom:4px;
+            margin-bottom:.5rem;
+            color:#9ddcff;
+        }
+        table {
+            width:100%;
+            border-collapse:collapse;
+            background:#2a2a40;
+            border-radius:6px;
+            overflow:hidden;
+            margin-bottom:1rem;
+        }
+        th, td {
+            padding:.5rem;
+            text-align:left;
+            border-bottom:1px solid #333;
+        }
+        th { background:#33334a; }
+        .checkbox { transform:scale(1.2); margin-right:10px; }
+        .button-row {
+            display:flex;
+            gap:.5rem;
+            margin-top:1rem;
+        }
+        .button-row button {
+            flex:1;
+            padding:.6rem 1rem;
+            background:#2e89ff;
+            border:none;
+            border-radius:4px;
+            color:#fff;
+            cursor:pointer;
+        }
+        .utilities-layout {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:2rem;
+            margin-top:2rem;
+        }
+        .util-column {
+            flex:1;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            gap:1rem;
+        }
+        .util-image img {
+            width:210px;
+            height:auto;
+            display:block;
+        }
+        .utility-button {
+            padding:.6rem 1rem;
+            background:#2e89ff;
+            border:none;
+            border-radius:4px;
+            color:#fff;
+            cursor:pointer;
+            width:80%;
+            max-width:250px;
+        }
+        .version-text {
+            font-size:14px;
+            color:#bbb;
+        }
+        footer {
+            background: #2a2a40;
+            padding: .75rem;
+            text-align: center;
+            font-size: 14px;
+            color: #aaa;
+        }
+        body.theme-light {
+            background:#f0f0f0;
+            color:#222;
+        }
+        body.theme-light header,
+        body.theme-light footer,
+        body.theme-light nav,
+        body.theme-light table,
+        body.theme-light .utilities-layout,
+        body.theme-light .button-row button {
+            background:#fff;
+            color:#222 !important;
+        }
+        body.theme-light header input,
+        body.theme-light header button,
+        body.theme-light .utility-button,
+        body.theme-light .button-row button {
+            background:#e0e0e0;
+            color:#222;
+        }
+        body.theme-light nav button {
+            color:#555;
+            border-color:transparent;
+        }
+        body.theme-light nav button.active {
+            border-color:#007acc;
+            color:#007acc;
+        }
+        body.theme-light th {
+            background:#d0d0d0;
+            color:#222;
+        }
+        body.theme-light td {
+            color:#222;
+            border-color:#ccc;
+        }
+        body.theme-light .version-text {
+            color:#444;
+        }
+        body.theme-light main::-webkit-scrollbar-track {
+            background:#eee;
+        }
+        body.theme-light main::-webkit-scrollbar-thumb {
+            background-color:#888;
+            border:3px solid #eee;
+        }
+        body.theme-light main::-webkit-scrollbar-thumb:hover {
+            background-color:#666;
+        }
+        body.theme-dark {
+            background:#121212;
+            color:#e0e0e0;
+        }
+        body.theme-dark header,
+        body.theme-dark footer,
+        body.theme-dark nav,
+        body.theme-dark table,
+        body.theme-dark .utilities-layout,
+        body.theme-dark .button-row button {
+            background:#1f1f1f;
+            color:#e0e0e0 !important;
+        }
+        body.theme-dark header input,
+        body.theme-dark header button,
+        body.theme-dark .utility-button,
+        body.theme-dark .button-row button {
+            background:#2a2a2a;
+            color:#e0e0e0;
+        }
+        body.theme-dark nav button {
+            color:#aaa;
+            border-color:transparent;
+        }
+        body.theme-dark nav button.active {
+            border-color:#4facf7;
+            color:#fff;
+        }
+        body.theme-dark th {
+            background:#2a2a2a;
+            color:#e0e0e0;
+        }
+        body.theme-dark td {
+            color:#e0e0e0;
+            border-color:#333;
+        }
+        body.theme-dark .version-text {
+            color:#ccc;
+        }
+        body.theme-dark main::-webkit-scrollbar-track {
+            background:#1f1f1f;
+        }
+        body.theme-dark main::-webkit-scrollbar-thumb {
+            background-color:#444;
+            border:3px solid #1f1f1f;
+        }
+        body.theme-dark main::-webkit-scrollbar-thumb:hover {
+            background-color:#666;
+        }
+        
+        body.theme-ocean {
+            background:#0e1c26;
+            color:#b3ecff;
+        }
+        body.theme-ocean header,
+        body.theme-ocean footer,
+        body.theme-ocean nav,
+        body.theme-ocean table,
+        body.theme-ocean .utilities-layout,
+        body.theme-ocean .button-row button {
+            background:#11344d;
+            color:#b3ecff !important;
+        }
+        body.theme-ocean header input,
+        body.theme-ocean header button,
+        body.theme-ocean .utility-button,
+        body.theme-ocean .button-row button {
+            background:#1a4e6e;
+            color:#b3ecff;
+        }
+        body.theme-ocean nav button {
+            color:#88bbcc;
+            border-color:transparent;
+        }
+        body.theme-ocean nav button.active {
+            border-color:#00cfff;
+            color:#fff;
+        }
+        body.theme-ocean th {
+            background:#16596f;
+            color:#b3ecff;
+        }
+        body.theme-ocean td {
+            color:#b3ecff;
+            border-color:#0e1c26;
+        }
+        body.theme-ocean .version-text {
+            color:#99cce6;
+        }
+        body.theme-ocean main::-webkit-scrollbar-track {
+            background:#11344d;
+        }
+        body.theme-ocean main::-webkit-scrollbar-thumb {
+            background-color:#2288aa;
+            border:3px solid #11344d;
+        }
+        body.theme-ocean main::-webkit-scrollbar-thumb:hover {
+            background-color:#44bbcc;
+        }
+        
+        body.theme-forest {
+            background:#1b2e1b;
+            color:#cfe9cf;
+        }
+        body.theme-forest header,
+        body.theme-forest footer,
+        body.theme-forest nav,
+        body.theme-forest table,
+        body.theme-forest .utilities-layout,
+        body.theme-forest .button-row button {
+            background:#2a3b2a;
+            color:#cfe9cf !important;
+        }
+        body.theme-forest header input,
+        body.theme-forest header button,
+        body.theme-forest .utility-button,
+        body.theme-forest .button-row button {
+            background:#3a5a3a;
+            color:#cfe9cf;
+        }
+        body.theme-forest nav button {
+            color:#88aa88;
+            border-color:transparent;
+        }
+        body.theme-forest nav button.active {
+            border-color:#7fff7f;
+            color:#7fff7f;
+        }
+        body.theme-forest th {
+            background:#345634;
+            color:#cfe9cf;
+        }
+        body.theme-forest td {
+            color:#cfe9cf;
+            border-color:#2a3b2a;
+        }
+        body.theme-forest .version-text {
+            color:#aaccaa;
+        }
+        body.theme-forest main::-webkit-scrollbar-track {
+            background:#2a3b2a;
+        }
+        body.theme-forest main::-webkit-scrollbar-thumb {
+            background-color:#4caf4c;
+            border:3px solid #2a3b2a;
+        }
+        body.theme-forest main::-webkit-scrollbar-thumb:hover {
+            background-color:#66dd66;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <label>Game Folder:</label>
+    <input id="pathBox" readonly />
+    <button onclick="send('browseFolder')">Browse</button>
+</header>
+<nav>
+    <button class="active" onclick="show('plugins')">Plugins</button>
+    <button onclick="show('addons')">Addons</button>
+    <button onclick="show('utilities')">Utilities</button>
+</nav>
+<main>
+    <section id="plugins" class="tab-content active">
+        <div id="modContainer">Loading mods...</div>
+        <div class="button-row">
+            <button onclick="send('installMods')">Install / Update</button>
+            <button onclick="send('toggleMods')">Toggle Mods</button>
+        </div>
+    </section>
+    <section id="utilities" class="tab-content">
+        <div class="utilities-layout">
+            <div class="util-column">
+                <button class="utility-button" onclick="send('uninstallAll')">Remove All Mods</button>
+                <label for="themeSelect" style="margin-top:1rem; color:inherit;">Theme:</label>
+                <select id="themeSelect" class="utility-button">
+                    <option value="">Default</option>
+                    <option value="light">Light</option>
+                    <option value="dark">Dark</option>
+                    <option value="ocean">Ocean</option>
+                    <option value="forest">Forest</option>
+                </select>
+            </div>
+            <div class="util-column util-image">
+                <img src="data:image/png;base64,{{LOGO_B64}}" alt="logo" />
+                <div class="version-text" id="versionLabel">Monke Mod Manager</div>
+                <button class="utility-button" onclick="send('discord')">Join the Discord!</button>
+            </div>
+            <div class="util-column">
+                <button class="utility-button" onclick="send('openGameFolder')">Game Folder</button>
+                <button class="utility-button" onclick="send('openConfig')">Config Folder</button>
+                <button class="utility-button" onclick="send('openModsFolder')">Mods Folder</button>
+            </div>
+        </div>
+    </section>
+</main>
+<footer>
+    <span id="status">Status: Idle</span>
+</footer>
+<script>
+    const modElements = {};
+    const modDependencies = {};
+    const modDependents = {};
+
+    function show(id) {
+        document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+        event.target.classList.add('active');
+    }
+
+    function send(action, data = {}) {
+        chrome.webview.postMessage({ action, ...data });
+    }
+
+    chrome.webview.addEventListener('message', e => {
+        const m = e.data;
+        if (m.statusText) document.getElementById('status').textContent = 'Status: ' + m.statusText;
+        if (m.path) document.getElementById('pathBox').value = m.path;
+        if (m.version) document.getElementById('versionLabel').textContent = 'Monke Mod Manager v' + m.version;
+    });
+
+    function setCheckboxState(modName, state, fromDependency = false) {
+        const cb = modElements[modName];
+        if (!cb) return;
+
+        if (state) {
+            cb.checked = true;
+            cb.disabled = modName === "BepInEx";
+            send('checkMod', {
+                mod: modName,
+                download: cb.dataset.download,
+                location: cb.dataset.location
+            });
+            (modDependencies[modName] || []).forEach(dep => setCheckboxState(dep, true, true));
+        } else {
+            cb.checked = false;
+            cb.disabled = false;
+            send('uncheckMod', {
+                mod: modName,
+                download: cb.dataset.download,
+                location: cb.dataset.location
+            });
+            (modDependents[modName] || []).forEach(dependent => {
+                if (modElements[dependent]?.checked) {
+                    setCheckboxState(dependent, false);
+                }
+            });
+            (modDependencies[modName] || []).forEach(dep => {
+                const stillNeeded = (modDependents[dep] || []).some(parent => modElements[parent]?.checked);
+                if (!stillNeeded) setCheckboxState(dep, false, true);
+            });
+        }
+    }
+
+    async function loadMods() {
+        const groups = await fetch('https://raw.githubusercontent.com/The-Graze/MonkeModInfo/master/groupinfo.json').then(r => r.json());
+        const mods = await fetch('https://raw.githubusercontent.com/The-Graze/MonkeModInfo/master/modinfo.json').then(r => r.json());
+        const container = document.getElementById('modContainer');
+        container.innerHTML = '';
+
+        mods.forEach(mod => {
+            if (mod.dependencies) {
+                modDependencies[mod.name] = mod.dependencies;
+                mod.dependencies.forEach(dep => {
+                    if (!modDependents[dep]) modDependents[dep] = [];
+                    modDependents[dep].push(mod.name);
+                });
+            }
+        });
+
+        groups.sort((a, b) => a.rank - b.rank).forEach(gr => {
+            const sect = document.createElement('div');
+            const h3 = document.createElement('h3');
+            h3.textContent = gr.name;
+            sect.append(h3);
+
+            const fm = mods.filter(m => m.group.toLowerCase() === gr.name.toLowerCase());
+            if (!fm.length) {
+                const p = document.createElement('p');
+                p.textContent = 'No mods.';
+                sect.append(p);
+                container.append(sect);
+                return;
+            }
+
+            const tbl = document.createElement('table');
+            tbl.innerHTML = `<thead><tr><th></th><th>Name</th><th>Author</th></tr></thead>`;
+            const tbody = document.createElement('tbody');
+
+            fm.forEach(mod => {
+                const tr = document.createElement('tr');
+                const cbCell = document.createElement('td');
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.classList.add('checkbox');
+                cb.dataset.download = mod.download_url || "";
+                cb.dataset.location = mod.install_location || "";
+                modElements[mod.name] = cb;
+
+                cb.onchange = () => {
+                    setCheckboxState(mod.name, cb.checked);
+                };
+
+                cbCell.append(cb);
+                const nameTd = document.createElement('td');
+                nameTd.textContent = mod.name;
+                const authTd = document.createElement('td');
+                authTd.textContent = mod.author || 'Unknown';
+                tr.append(cbCell, nameTd, authTd);
+                tbody.append(tr);
+            });
+
+            tbl.append(tbody);
+            sect.append(tbl);
+            container.append(sect);
+        });
+
+        if (modElements["BepInEx"]) {
+            setCheckboxState("BepInEx", true);
+        }
+    }
+
+    loadMods();
+
+    const themeSelect = document.getElementById('themeSelect');
+    const applyTheme = t => {
+        document.body.className = '';
+        if (t) document.body.classList.add('theme-' + t);
+    };
+    themeSelect.addEventListener('change', () => {
+        applyTheme(themeSelect.value);
+        localStorage.setItem('selectedTheme', themeSelect.value);
+    });
+    const saved = localStorage.getItem('selectedTheme');
+    if (saved) {
+        themeSelect.value = saved;
+        applyTheme(saved);
+    }
+</script>
+</body>
+</html>

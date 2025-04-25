@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MonkeModManager", "MonkeModManager.csproj", "{D949F6C9-F886-4193-ACD9-869248039BA9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Updater", "Updater\Updater.csproj", "{E75A10D4-E75E-466C-A51A-6B4C6C1C1DFC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D949F6C9-F886-4193-ACD9-869248039BA9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D949F6C9-F886-4193-ACD9-869248039BA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D949F6C9-F886-4193-ACD9-869248039BA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D949F6C9-F886-4193-ACD9-869248039BA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E75A10D4-E75E-466C-A51A-6B4C6C1C1DFC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E75A10D4-E75E-466C-A51A-6B4C6C1C1DFC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E75A10D4-E75E-466C-A51A-6B4C6C1C1DFC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E75A10D4-E75E-466C-A51A-6B4C6C1C1DFC}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
