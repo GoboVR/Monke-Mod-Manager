@@ -32,4 +32,4 @@ Mod submission is likely subject to change in the future.
 These files are like modpacks and can install any mod(s) without it needing to be on mmm.
 They can contain Cosmetics, Themes, Mods, anything really.
 
-You can find the MMMInstaller file maker [here](https://github.com/ngbatzyt/MMMInstallerFile/releases/latest).
+You can find out how to make an mmm file [here](https://github.com/ngbatzyt/MMMInstallerFile).
