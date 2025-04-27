@@ -21,11 +21,11 @@ namespace MonkeModManager
         private string _installDirectory = @"";
         private const string DefaultOculusInstallDirectory = @"C:\Program Files\Oculus\Software\Software\another-axiom-gorilla-tag";
         private const string DefaultSteamInstallDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\Gorilla Tag";
-        private Dictionary<string, string> _download = new();
-        private Dictionary<string, string> _location = new();
+        private Dictionary<string, string> _download = [];
+        private Dictionary<string, string> _location = [];
         private string _version = "1.0.0";
         public bool installing = false;
-        public short CurrentVersion = 1;
+        public short CurrentVersion = 2;
 
         public Form1()
         {
@@ -189,6 +189,9 @@ namespace MonkeModManager
                 case "discord":
                     Process.Start("https://discord.gg/b2MhDBAzTv");
                     break;
+                case "mFile":
+                    FindMMMFile();
+                    break;
             }
         }
 
@@ -252,6 +255,84 @@ namespace MonkeModManager
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        
+        private async void FindMMMFile()
+        {
+            
+            try
+            {
+                using var fileDialog = new OpenFileDialog();
+                fileDialog.Multiselect = false;
+                fileDialog.Filter = @"MMM Files (.mmm)|*.mmm";
+                fileDialog.FilterIndex = 1;
+
+                if (fileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string path = fileDialog.FileName;
+                    if (Path.GetExtension(path).Equals(".mmm", StringComparison.OrdinalIgnoreCase))
+                    {
+                        InstallMMMFile(Path.GetFullPath(path));
+                        await Task.Delay(5000);
+                        UpdateStatus("Idle");
+                    }
+                    else
+                    {
+                        MessageBox.Show("That's not an mmm file! Try again.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+        private void InstallMMMFile(string path)
+        {
+            if (string.IsNullOrEmpty(path) || !File.Exists(path))
+            {
+                MessageBox.Show("Please select a valid MMM file.", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            else
+            {
+                var p = Path.Combine(Directory.GetCurrentDirectory(), @"temp");
+                byte[] data = File.ReadAllBytes(path);
+                if(!Directory.Exists(Path.Combine(Directory.GetCurrentDirectory(), @"temp"))) Directory.CreateDirectory(p);
+                UnzipFile(data, p);
+
+                if (File.Exists(Path.Combine(p, "Info.json")))
+                {
+                    var f = JsonToDictionary(Path.Combine(p, "Info.json"));
+                    
+
+                    foreach (KeyValuePair<string, string> l in f)
+                    {
+                        switch (l.Key)
+                        {
+                            case "dll":
+                                if(!Directory.Exists(Path.Combine(_installDirectory, $"BepInEx/plugins/{l.Value}"))) 
+                                    Directory.CreateDirectory(Path.Combine(_installDirectory, $"BepInEx/plugins/{l.Value}"));
+                                File.Copy(Path.Combine(p, "mod.dll"), Path.Combine(_installDirectory, $"BepInEx/plugins/{l.Value}",  $"{l.Value}.dll"));
+                                break;
+                            case "download":
+                                var file = DownloadFile(l.Value);
+                                var fe = Path.GetFileName(l.Value);
+                                if(Path.GetExtension(fe).Equals(".dll", StringComparison.OrdinalIgnoreCase))
+                                    File.WriteAllBytes(Path.Combine(_installDirectory, "BepInEx/plugins", fe!), file);
+                                else
+                                    UnzipFile(file, Path.Combine(_installDirectory, "BepInEx/plugins"));
+                                break;
+                            case "zip":
+                                var john = File.ReadAllBytes(Path.Combine(p, "mod.zip"));
+                                if(!Directory.Exists(Path.Combine(_installDirectory, $"BepInEx/plugins/{l.Value}"))) 
+                                    Directory.CreateDirectory(Path.Combine(_installDirectory, $"BepInEx/plugins/{l.Value}"));
+                                UnzipFile(john, Path.Combine(_installDirectory, $"BepInEx/plugins/{l.Value}"));
+                                break;
+                        }
+                    }
+                }
+                Directory.Delete(Path.Combine(Directory.GetCurrentDirectory(), @"temp"), true);
             }
         }
 
@@ -318,5 +399,25 @@ namespace MonkeModManager
             string e = c.Replace("HideManagerGameObject = false", "HideManagerGameObject = true");
             File.WriteAllText(Path.Combine(_installDirectory, @"BepInEx\config\BepInEx.cfg"), e);
         } 
+        
+        public static Dictionary<string, string> JsonToDictionary(string path)
+        {
+            var result = new Dictionary<string, string>();
+    
+            string jsonString = File.ReadAllText(path);
+            JSONNode root = JSON.Parse(jsonString);
+
+            if (root != null && root.IsObject)
+            {
+                var obj = root.AsObject;
+                foreach (var key in obj.Keys)
+                {
+                    result[key] = obj[(string)key].Value; // .Value gets the string inside JSONNode
+                }
+            }
+
+            return result;
+        }
+
     }
 }
