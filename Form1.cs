@@ -25,7 +25,7 @@ namespace MonkeModManager
         private Dictionary<string, string> _location = [];
         private string _version = "1.1.1";
         public bool installing = false;
-        public short CurrentVersion = 2;
+        public short CurrentVersion = 3;
 
         public Form1()
         {
@@ -388,7 +388,22 @@ namespace MonkeModManager
                 {
                     string yes = Directory.GetCurrentDirectory();
                     MessageBox.Show("Update Available!", "Notice!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    Process.Start(Path.Combine(yes, "Updater.exe"));
+                    if(File.Exists(Path.Combine(yes, "Updater.exe")))
+                        Process.Start(Path.Combine(yes, "Updater.exe"));
+                    else
+                    {
+                        var eat = MessageBox.Show("The Updater isn't installed would you like to install it?", "Notice!", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                        if (eat == DialogResult.Yes)
+                        {
+                            var eated = DownloadFile("https://github.com/ngbatzyt/monke-mod-manager/releases/latest/download/Updater.exe");
+                            File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), @"Updater.exe"), eated);
+                            Process.Start(Path.Combine(Directory.GetCurrentDirectory(), @"Updater.exe"));
+                        }
+                        else
+                        {
+                            Process.Start("https://github.com/ngbatzyt/monke-mod-manager/releases/latest/");
+                        }
+                    }
                     Environment.Exit(0);
                 }
             } 
