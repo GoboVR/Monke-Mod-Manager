@@ -398,7 +398,6 @@
         <div id="modContainer">Loading mods...</div>
         <div class="button-row">
             <button onclick="send('installMods')">Install / Update</button>
-            <button onclick="send('toggleMods')">Toggle Mods</button>
         </div>
     </section>
     <section id="mmm" class="tab-content">
@@ -406,7 +405,7 @@
         <p>⠀</p>
         <p>MMM files can download and install potentially harmful mods to your computer.</p>
         <p>I would recommend making sure that there is source code in the github repo where you got it,
-            if you got it from anywhere other than github don't install it as that is one of the easiest ways to get malicious software on your computer</p>
+            if you got it from anywhere other than github i would recommend not to install it unless its from someone trusted like Graze as that is one of the easiest ways to get malicious software on your computer</p>
         <p>I am not responsible for any damage that may happen when installing a MMM file.</p>
         <div class="button-row">
             <button onclick="send('mFile')">Upload MMM File</button>
@@ -461,7 +460,7 @@
         const m = e.data;
         if (m.statusText) document.getElementById('status').textContent = 'Status: ' + m.statusText;
         if (m.path) document.getElementById('pathBox').value = m.path;
-        if (m.version) document.getElementById('versionLabel').textContent = 'Monke Mod Manager v' + m.version;
+        if (m.version) document.getElementById('versionLabel').textContent = 'Monke Mod Manager ' + m.version;
     });
 
     function setCheckboxState(modName, state, fromDependency = false) {

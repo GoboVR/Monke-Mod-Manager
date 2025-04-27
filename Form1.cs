@@ -23,7 +23,7 @@ namespace MonkeModManager
         private const string DefaultSteamInstallDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\Gorilla Tag";
         private Dictionary<string, string> _download = [];
         private Dictionary<string, string> _location = [];
-        private string _version = "1.0.0";
+        private string _version = "1.1.1";
         public bool installing = false;
         public short CurrentVersion = 2;
 
@@ -52,13 +52,13 @@ namespace MonkeModManager
                 _webView.CoreWebView2.NavigationCompleted += (sender, args) =>
                 {
                     PostRaw(@"{""version"":""" + _version + @"""}");
-                    Properties.Settings.Default.installDirectory = _installDirectory;
+                    _installDirectory = Properties.Settings.Default.installDirectory;
 
-                    if (Directory.Exists(DefaultSteamInstallDirectory) || _installDirectory == null)
+                    if (Directory.Exists(DefaultSteamInstallDirectory) && string.IsNullOrEmpty(_installDirectory))
                         _installDirectory = DefaultSteamInstallDirectory;
-                    else if (Directory.Exists(DefaultOculusInstallDirectory) || _installDirectory == null)
+                    else if (Directory.Exists(DefaultOculusInstallDirectory) && string.IsNullOrEmpty(_installDirectory))
                         _installDirectory = DefaultOculusInstallDirectory;
-                    else if(_installDirectory == null)
+                    else if(!Directory.Exists(DefaultSteamInstallDirectory) && !Directory.Exists(DefaultOculusInstallDirectory) && string.IsNullOrEmpty(_installDirectory))
                         FindGameFolder();
 
                     PostPath(_installDirectory);
@@ -241,6 +241,8 @@ namespace MonkeModManager
                     {
                         _installDirectory = Path.GetDirectoryName(path);
                         PostPath(_installDirectory);
+                        Properties.Settings.Default.installDirectory = _installDirectory;
+                        Properties.Settings.Default.Save();
                         UpdateStatus("Game Folder Found!");
                         await Task.Delay(5000);
                         UpdateStatus("Idle");
@@ -260,7 +262,6 @@ namespace MonkeModManager
         
         private async void FindMMMFile()
         {
-            
             try
             {
                 using var fileDialog = new OpenFileDialog();
@@ -273,8 +274,8 @@ namespace MonkeModManager
                     string path = fileDialog.FileName;
                     if (Path.GetExtension(path).Equals(".mmm", StringComparison.OrdinalIgnoreCase))
                     {
-                        InstallMMMFile(Path.GetFullPath(path));
-                        await Task.Delay(5000);
+                        UpdateStatus("Installing MMM File...");
+                        await InstallMMMFile(Path.GetFullPath(path));
                         UpdateStatus("Idle");
                     }
                     else
@@ -288,7 +289,7 @@ namespace MonkeModManager
                 MessageBox.Show(ex.Message, @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private void InstallMMMFile(string path)
+        private async Task InstallMMMFile(string path)
         {
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
             {
@@ -318,10 +319,19 @@ namespace MonkeModManager
                             case "download":
                                 var file = DownloadFile(l.Value);
                                 var fe = Path.GetFileName(l.Value);
-                                if(Path.GetExtension(fe).Equals(".dll", StringComparison.OrdinalIgnoreCase))
-                                    File.WriteAllBytes(Path.Combine(_installDirectory, "BepInEx/plugins", fe!), file);
+                                var fee = Path.GetFileNameWithoutExtension(l.Value);
+                                if (Path.GetExtension(fe).Equals(".dll", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    if(!Directory.Exists(Path.Combine(_installDirectory, $"BepInEx/plugins/{fee}"))) 
+                                        Directory.CreateDirectory(Path.Combine(_installDirectory, $"BepInEx/plugins/{fee}"));
+                                    File.WriteAllBytes(Path.Combine(_installDirectory, $"BepInEx/plugins/{fee}", fe!), file);
+                                }
                                 else
-                                    UnzipFile(file, Path.Combine(_installDirectory, "BepInEx/plugins"));
+                                {
+                                    if(!Directory.Exists(Path.Combine(_installDirectory, $"BepInEx/plugins/{fee}"))) 
+                                        Directory.CreateDirectory(Path.Combine(_installDirectory, $"BepInEx/plugins/{fee}"));
+                                    UnzipFile(file, Path.Combine(_installDirectory, $@"BepInEx/plugins/{fee}"));
+                                }
                                 break;
                             case "zip":
                                 var john = File.ReadAllBytes(Path.Combine(p, "mod.zip"));
@@ -343,9 +353,10 @@ namespace MonkeModManager
             zip.ExtractToDirectory(directory);
         }
 
-        private byte[] DownloadFile(string url)
+        private static byte[] DownloadFile(string url)
         {
-            using var client = new WebClient { Proxy = null };
+            using WebClient client = new WebClient();
+            client.Proxy = null;
             return client.DownloadData(url);
         }
 
@@ -376,6 +387,7 @@ namespace MonkeModManager
                 if (version > CurrentVersion)
                 {
                     string yes = Directory.GetCurrentDirectory();
+                    MessageBox.Show("Update Available!", "Notice!", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     Process.Start(Path.Combine(yes, "Updater.exe"));
                     Environment.Exit(0);
                 }
@@ -383,7 +395,7 @@ namespace MonkeModManager
             catch(Exception e){MessageBox.Show(e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);}
         }
         
-        public void ConfigFix()
+        private void ConfigFix()
         {
             if (!File.Exists(Path.Combine(_installDirectory, @"BepInEx\config\BepInEx.cfg")))
             {
@@ -400,7 +412,7 @@ namespace MonkeModManager
             File.WriteAllText(Path.Combine(_installDirectory, @"BepInEx\config\BepInEx.cfg"), e);
         } 
         
-        public static Dictionary<string, string> JsonToDictionary(string path)
+        private static Dictionary<string, string> JsonToDictionary(string path)
         {
             var result = new Dictionary<string, string>();
     
@@ -412,7 +424,7 @@ namespace MonkeModManager
                 var obj = root.AsObject;
                 foreach (var key in obj.Keys)
                 {
-                    result[key] = obj[(string)key].Value; // .Value gets the string inside JSONNode
+                    result[key] = obj[(string)key].Value;
                 }
             }
 
