@@ -18,14 +18,14 @@ namespace MonkeModManager
     public partial class Form1 : Form
     {
         private WebView2 _webView;
-        private string _installDirectory = @"";
+        public string _installDirectory = @"";
         private const string DefaultOculusInstallDirectory = @"C:\Program Files\Oculus\Software\Software\another-axiom-gorilla-tag";
         private const string DefaultSteamInstallDirectory = @"C:\Program Files (x86)\Steam\steamapps\common\Gorilla Tag";
         private Dictionary<string, string> _download = [];
         private Dictionary<string, string> _location = [];
         private string _version = "1.1.1";
         public bool installing = false;
-        public short CurrentVersion = 3;
+        public short CurrentVersion = 4;
 
         public Form1()
         {
@@ -289,7 +289,7 @@ namespace MonkeModManager
                 MessageBox.Show(ex.Message, @"Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
-        private async Task InstallMMMFile(string path)
+        public async Task InstallMMMFile(string path)
         {
             if (string.IsNullOrEmpty(path) || !File.Exists(path))
             {
@@ -305,8 +305,12 @@ namespace MonkeModManager
                 if (File.Exists(Path.Combine(p, "Info.json")))
                 {
                     var f = JsonToDictionary(Path.Combine(p, "Info.json"));
-                    
 
+                    if (_installDirectory == null)
+                    {
+                        MessageBox.Show("Run MMM normally and select your install location!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    
                     foreach (KeyValuePair<string, string> l in f)
                     {
                         switch (l.Key)
@@ -388,8 +392,12 @@ namespace MonkeModManager
                 {
                     string yes = Directory.GetCurrentDirectory();
                     MessageBox.Show("Update Available!", "Notice!", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    if(File.Exists(Path.Combine(yes, "Updater.exe")))
+                    if (File.Exists(Path.Combine(yes, "Updater.exe")))
+                    {
+                        var eated = DownloadFile("https://github.com/ngbatzyt/monke-mod-manager/releases/latest/download/Updater.exe");
+                        File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), @"Updater.exe"), eated);
                         Process.Start(Path.Combine(yes, "Updater.exe"));
+                    }
                     else
                     {
                         var eat = MessageBox.Show("The Updater isn't installed would you like to install it?", "Notice!", MessageBoxButtons.YesNo, MessageBoxIcon.Question);

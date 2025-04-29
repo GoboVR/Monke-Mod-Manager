@@ -53,6 +53,7 @@ namespace Updater
             StartPosition = FormStartPosition.CenterScreen;
             TopMost = true;
             InitializeComponent();
+            label1.Text = "Downloading...";
             this.MouseDown += Form_MouseDown;
             
             IntPtr hRegion = CreateRoundRectRgn(0, 0, Width, Height, 50, 50);
@@ -63,23 +64,18 @@ namespace Updater
 
         private async void Updater()
         {
-            try
-            {
-                label1.Text = "Downloading...";
-                byte[] john = DownloadFile("https://github.com/ngbatzyt/monke-mod-manager/releases/latest/download/MonkeModManager.zip");
-                label1.Text = "Installing...";
-                UnzipFile(john, Directory.GetCurrentDirectory());
-                await Task.Delay(5000);
-                label1.Text = "Opening MMM...";
-                await Task.Delay(1000);
-                Process.Start(Path.Combine(Directory.GetCurrentDirectory(), "MonkeModManager.exe"));
-                Environment.Exit(0);
-            }
-            catch (Exception e)
-            {
-                MessageBox.Show(e.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                Environment.Exit(0);
-            }
+            label1.Text = "Downloading...";
+            byte[] john = DownloadFile("https://github.com/ngbatzyt/monke-mod-manager/releases/latest/download/MonkeModManager.msi");
+            File.WriteAllBytes(Path.Combine(Directory.GetCurrentDirectory(), "temp", "MonkeModManager.msi"), john);
+            label1.Text = "Installing...";
+            Process process = new Process();
+            process.StartInfo.FileName = "msiexec";
+            process.StartInfo.Arguments = $"/i \"{Path.Combine(Directory.GetCurrentDirectory(), "temp", "MonkeModManager.msi")}\" /qn";
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.CreateNoWindow = true;
+            process.Start();
+            process.WaitForExit();
+            Environment.Exit(0);
         }
         private byte[] DownloadFile(string url)
         {
@@ -105,6 +101,10 @@ namespace Updater
             using var ms = new MemoryStream(data);
             using var zip = new Unzip(ms);
             zip.ExtractToDirectory(directory);
+        }
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            Updater();
         }
     }
 }
