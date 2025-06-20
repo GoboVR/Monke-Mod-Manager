@@ -497,8 +497,8 @@
     }
 
     async function loadMods() {
-        const groups = await fetch('https://raw.githubusercontent.com/GoboVR/MonkeModInfo/master/groupinfo.json').then(r => r.json());
-        const mods = await fetch('https://raw.githubusercontent.com/GoboVR/MonkeModInfo/master/modinfo.json').then(r => r.json());
+        const groups = await fetch('https://raw.githubusercontent.com/GoboVR/MonkeModInfo/refs/heads/master/groupinfo.json').then(r => r.json());
+        const mods = await fetch('https://raw.githubusercontent.com/GoboVR/MonkeModInfo/refs/heads/master/modinfo.json').then(r => r.json());
         const container = document.getElementById('modContainer');
         container.innerHTML = '';
 
